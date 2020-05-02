@@ -1,7 +1,7 @@
 defmodule Digestex do
 
   @methods [get: "GET", post: "POST"]
-  @httpc_timeout 8000
+  @httpc_timeout 30_000
 
   def start(_type, _args) do
     {:ok, pid} = :inets.start(:httpc, [{:profile, :dx_profile}])
@@ -76,7 +76,7 @@ defmodule Digestex do
                       {'www-authenticate', stale_www_authenticate} ->
                         digest_fields = digest_fields( stale_www_authenticate )
                         if Map.has_key?(digest_fields,"stale") && String.downcase(digest_fields["stale"]) == "true" do
-                          nc = nc + 1 
+                          nc = nc + 1
                           case digest_auth_response( stale_www_authenticate, user, password, uri.path, @methods[method], nc ) do
                             {:ok, stale_auth_response} ->
                               stale_authHeader=[{'Authorization', stale_auth_response}]
@@ -86,14 +86,14 @@ defmodule Digestex do
                                 _ -> []
                               end
                               stale_authHeader = stale_authHeader ++ stale_cookie ++ headers
-              
+
                               stale_req=case method do
                                 :post -> {url,stale_authHeader,type,String.to_charlist(data)}
                                 _ -> {url,stale_authHeader}
                               end
                               :httpc.request(method,stale_req,http_options(),[], get_profile())
-              
-                            _ -> {:error, "Unable to create digest auth response"}  
+
+                            _ -> {:error, "Unable to create digest auth response"}
                           end
                         else
                           second_response
@@ -154,7 +154,7 @@ defmodule Digestex do
 
   def calcResponse(digestline, user, password, uri, method, cnonce \\ nil, ncstr) do
     dp=digest_fields(digestline)
-    
+
     qoplist=String.split(dp["qop"],",")
     dp = cond do
       Map.has_key?(dp, "opaque") ->
